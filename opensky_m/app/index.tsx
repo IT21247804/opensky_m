@@ -171,7 +171,7 @@ const Page = () => {
             const statement = await db.prepareAsync("INSERT INTO parking_ticket (ticket_id, ticket_time, ticket_ref, amount) VALUES ($ticket_id, $ticket_time, $ticket_ref, $amount);")
             try {
                 let result = await statement.executeAsync({ $ticket_id: props.barCodeValue, $ticket_time: props.generatedTime, $ticket_ref: (ref.trim() === "" ? null : ref), $amount: (params.tktValue).toFixed(2) })
-                // console.log(`${props.generatedTime} [${props.qrValue}]: Cashbook entry posted -> REC# ${result.lastInsertRowId} -> AFFECTED ${result.changes} ROWS ${(params.tktValue).toFixed(2)}`)
+                 console.log(`${props.generatedTime} [${props.qrValue}]: Cashbook entry posted -> REC# ${result.lastInsertRowId} -> AFFECTED ${result.changes} ROWS ${(params.tktValue).toFixed(2)}`)
             } finally {
                 await statement.finalizeAsync()
             }
@@ -225,7 +225,9 @@ const Page = () => {
                     onChangeText={setReference}
                     clearTextOnFocus={true}
                 />
+
             </View>
+            
             <ScrollView style={{ width: "100%" }}>
                 {/* <View style={styles.barcodeContainer}> */}
                 {/* <Barcode value={qrValue.toUpperCase()} onBase64Generated={onBarcodeData} /> */}
@@ -237,7 +239,10 @@ const Page = () => {
                     /> */}
                 {/* </View> */}
 
-                <View style={{ width: "100%", paddingHorizontal: 20, marginTop: 10, gap: 10 }}>
+                <View style={{ width: "100%", paddingHorizontal: 20, marginTop: 10, gap: 10 }}
+                
+                
+                >
                     <TouchableOpacity
 
                         disabled={busy}
