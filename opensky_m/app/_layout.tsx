@@ -32,7 +32,7 @@ const DrawerLayout = () => {
                     <Drawer.Screen
                         name="index_01"
                         options={{
-                            drawerItemStyle: { display: 'none' },
+                            //drawerItemStyle: { display: 'none' },
                             drawerLabel: 'Home',
                             title: 'Home',
                             drawerIcon: ({ size, color }) => (<Ionicons name='home-outline' size={size} color={color} />)
@@ -49,7 +49,7 @@ const DrawerLayout = () => {
                     <Drawer.Screen
                         name="(sales)"
                         options={{
-                            drawerItemStyle: { display: 'none' },
+                            //drawerItemStyle: { display: 'none' },
                             drawerLabel: 'Sales',
                             title: 'Sales',
                             drawerIcon: ({ size, color }) => (<Ionicons name='cash-outline' size={size} color={color} />)
