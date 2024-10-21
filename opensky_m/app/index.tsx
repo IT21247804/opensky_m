@@ -1,4 +1,4 @@
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View, ToastAndroid, SafeAreaView } from "react-native"
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View, ToastAndroid, SafeAreaView, Platform, Share } from "react-native"
 
 import * as FileSystem from 'expo-file-system'
 
@@ -8,6 +8,7 @@ import { useDatabase } from "@/context/DatabaseProvider"
 import { format } from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
 import { ScrollView } from "react-native-gesture-handler"
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import { params } from "@/constants/system"
 
@@ -18,6 +19,7 @@ import { thilakawardena_logo_long } from "@/constants/images"
 import { currencyFormat } from "@/utils/formaters"
 import { useEffect, useState } from "react"
 import { Keyboard } from 'react-native'
+
 
 const FormattedTimeNow = (timeZone = 'UTC') => {
     const now = new Date()
@@ -90,81 +92,102 @@ const Page = () => {
         await PrintToken({ barCodeValue: `${timestamp}`, generatedTime: formattedTime, barcodeImage: barcodeData })
     }
 
+    const saveFile = async (uri: string, filename: string, mimetype: string): Promise<void> => {
+        try {
+          if (Platform.OS === 'android') {
+            let directoryUri = await AsyncStorage.getItem('directoryUri');
+      
+            // If no directory is stored, request permission and store the chosen directory
+            if (!directoryUri) {
+              const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+              if (permissions.granted) {
+                directoryUri = permissions.directoryUri;
+                await AsyncStorage.setItem('directoryUri', directoryUri); // Store the directory URI
+              } else {
+                await Share.share({ url: uri, title: 'Share PDF' });
+                return; // If permissions are not granted, share the PDF
+              }
+            }
+      
+            const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+      
+            // Save the file to the chosen/stored directory
+            await FileSystem.StorageAccessFramework.createFileAsync(directoryUri, filename, mimetype)
+              .then(async (fileUri) => {
+                await FileSystem.writeAsStringAsync(fileUri, base64, { encoding: FileSystem.EncodingType.Base64 });
+                console.log(`File saved to: ${fileUri}`);
+                Alert.alert('Success', `PDF saved to: ${fileUri}`);
+              })
+              .catch((e) => console.log(`Error creating file: ${e}`));
+          } else {
+            // Fallback for iOS
+            await Share.share({ url: uri, title: 'Share PDF' });
+          }
+        } catch (error) {
+          console.error('Error saving file:', error);
+        }
+      };
+      
+
     const PrintToken = async ({ barCodeValue, generatedTime, barcodeImage }: { barCodeValue: string, generatedTime: string, barcodeImage: string | undefined }) => {
         try {
             const html = `<html>
                             <head>
-                                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
                                 <style>
                                     body {
-                                        font-family: monospace; /* Monospace font ensures uniform spacing */
+                                        font-family: monospace;
                                         text-align: center;
                                         margin: 0;
                                         padding: 0;
                                         width: 100vw;
-                                        white-space: nowrap; /* Prevents automatic word wrapping */
+                                        white-space: nowrap;
                                     }
-                                    h2 {
-                                        font-size: 18px; /* Adjust header size */
-                                        margin: 10px 0;
-                                    }
-                                    .content {
-                                        font-size: 12px; /* Standardize the content font size */
-                                        margin: 10px 0;
-                                    }
-                                    .separator {
-                                        font-size: 20px;
-                                        margin: 5px 0;
-                                    }
-                                    .bc-container {
-                                        width: 100vw;
-                                        display: block;
-                                        margin-left: auto;
-                                        margin-right: auto;
-                                        margin-bottom: 10px;
-                                    }
-                                    p {
-                                        font-size: 12px;
-                                        margin: 0 0 10px 0;
-                                        white-space: normal; /* Ensure normal wrapping for paragraphs */
-                                    }
+                                    h2 { font-size: 18px; margin: 10px 0; }
+                                    .content { font-size: 12px; margin: 10px 0; }
+                                    .separator { font-size: 20px; margin: 5px 0; }
+                                    .bc-container { width: 100vw; display: block; margin: 0 auto 10px; }
+                                    p { font-size: 12px; margin: 0 0 10px; white-space: normal; }
                                 </style>
                             </head>
-                        <body>
-                        <img src="${thilakawardena_logo_long}" width="350" style="margin-bottom: 10px;" />
-                        <div class="separator" style="font-weight: bold">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PARKING TOKEN&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
-                        <div style="font-size: 22px; margin-bottom: 10px;">${generatedTime}</div>
-                        <div style="font-size: 32px; margin-bottom: 5px;">${ref?.toUpperCase()}</div>
-                        <div class="bc-container">
-                        <img src="${barcodeImage}" width="320"/>
-                        </div>
-                        <p>&nbsp;</p>
-                        <div class="content">
-                        <span style="font-size: 32px; font-weight: bold">Rs. ${currencyFormat(params.tktValue)}</span><br/>
-                        <span style="font-size: 16px;">Please submit this token </span><br/>
-                        <span style="font-size: 16px;">to the cashier for refund</span><br/>
-                        <span style="font-size: 20px; margin-top:10px;">PARKING AT YOUR OWN RISK</span><br/>
-                        </div>
-                        <div class="separator">*********************************</div>
-                        </body>
-                        </html>
-                        `
-
-            await Print.printAsync({ html })
-            await ParkingEntryRecord({ barCodeValue, generatedTime })
-            await UpdateAPI({ barCodeValue, generatedTime })
-
-            ToastAndroid.show(`Parking Ticket Created !! ${generatedTime}`, ToastAndroid.SHORT)
-
-            // RESET REFERENCE FIELD
-            setReference("")
-
-            // READY FOR NEXT TOKEN PRINT
-            setBusy(false)
-
-        } catch (error) {
-            Alert.alert("Print Error", `Failed to print parking ticket. \n ${error}`)
-        }
+                          <body>
+                            <img src="${thilakawardena_logo_long}" width="350" style="margin-bottom: 10px;" />
+                            <div class="separator" style="font-weight: bold">PARKING TOKEN</div>
+                            <div style="font-size: 22px; margin-bottom: 10px;">${generatedTime}</div>
+                            <div style="font-size: 32px; margin-bottom: 5px;">${barCodeValue.toUpperCase()}</div>
+                            <div class="bc-container">
+                              <img src="${barcodeImage}" width="320"/>
+                            </div>
+                            <p>&nbsp;</p>
+                            <div class="content">
+                              <span style="font-size: 32px; font-weight: bold">Rs. ${currencyFormat(params.tktValue)}</span><br/>
+                              <span style="font-size: 16px;">Please submit this token </span><br/>
+                              <span style="font-size: 16px;">to the cashier for refund</span><br/>
+                              <span style="font-size: 20px; margin-top:10px;">PARKING AT YOUR OWN RISK</span><br/>
+                            </div>
+                            <div class="separator">*********************************</div>
+                          </body>
+                        </html>`;
+            
+            // Generate the PDF
+            const pdfUri = await Print.printToFileAsync({ html });
+            
+            // Save the PDF without previewing
+            await saveFile(pdfUri.uri, `ParkingToken_${generatedTime}.pdf`, 'application/pdf');
+            
+            // Perform other tasks (e.g., updating API, showing a toast)
+            await ParkingEntryRecord({ barCodeValue, generatedTime });
+            await UpdateAPI({ barCodeValue, generatedTime });
+            
+            ToastAndroid.show(`Parking Ticket Created !! ${generatedTime}`, ToastAndroid.SHORT);
+            
+            // Reset and ready for next token
+            setReference('');
+            setBusy(false);
+            
+          } catch (error) {
+            Alert.alert("Print Error", `Failed to print parking ticket. \n ${error}`);
+          }
     }
 
     const ParkingEntryRecord = async ({ ...props }) => {
