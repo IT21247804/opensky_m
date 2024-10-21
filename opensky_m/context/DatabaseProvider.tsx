@@ -15,6 +15,7 @@ export const DatabaseProvider = ({ children }: { children: React.ReactNode }) =>
     useEffect(() => {
         const initializeDatabase = async () => {
             const db = await SQLite.openDatabaseAsync('opensky_mobile.db')
+            console.log('Database opened successfully')
 
             await db.execAsync(`
                 CREATE TABLE IF NOT EXISTS customers (
@@ -72,12 +73,12 @@ export const DatabaseProvider = ({ children }: { children: React.ReactNode }) =>
                     amount REAL NOT NULL
                 );`)
 
-
+                console.log('Tables created successfully')
             setDb(db)
         }
 
         initializeDatabase()
-    })
+    }, [])
 
     return (
         <DatabaseContext.Provider value={db}>
