@@ -17,6 +17,7 @@ import { thilakawardena_logo_long } from "@/constants/images"
 
 import { currencyFormat } from "@/utils/formaters"
 import { useEffect, useState } from "react"
+import { Keyboard } from 'react-native'
 
 const FormattedTimeNow = (timeZone = 'UTC') => {
     const now = new Date()
@@ -74,6 +75,7 @@ const Page = () => {
     // NEW ONE PRESS FUNCTION TO CREATE PARKING TOKEN
     const GenerateParkingToken = async () => {
 
+        Keyboard.dismiss();
         // HOLD NEW PRINT REQUEST UNTIL FINISHES THE LAST
         setBusy(true)
 
@@ -206,9 +208,18 @@ const Page = () => {
             Alert.alert("Push API Error", `Failed to update API.\n${error}`)
         }
     }
+    const shouldSetResponse = () => true;
+const onRelease = () => (
+  Keyboard.dismiss()
+);
 
     return (
         <SafeAreaView style={styles.container}>
+              <View
+    onResponderRelease={ onRelease }
+    onStartShouldSetResponder={ shouldSetResponse }
+    style={ { height: '100%',width: "100%" } }
+  >
             <View style={{ width: "100%", gap: 10, marginBottom: 10, paddingHorizontal: 20 }}>
                 <TextInput
                     readOnly
@@ -262,6 +273,7 @@ const Page = () => {
                     </TouchableOpacity>
                 </View>
             </ScrollView>
+            </View>
         </SafeAreaView>
     )
 }
