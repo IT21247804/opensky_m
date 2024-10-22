@@ -1,3 +1,4 @@
+//inputComponent.tsx
 import React, { forwardRef } from 'react';
 import PropTypes from 'prop-types';
 import { TextInput, View, StyleSheet } from 'react-native';
@@ -8,33 +9,29 @@ const InputComponent = forwardRef(({ generatedTime, setReference }, ref) => {
     return (
         <View style={styles.inputContainer}>
             <TextInput
-                ref={ref} // Use the forwarded ref
                 value={generatedTime}
                 style={[styles.textInput, { textAlign: "center", fontSize: 28, color: colors.darkGray }]}
                 placeholder="Generated Time"
-                editable={false} // Set editable to false instead of readOnly
+                editable={false}
             />
             <TextInput
+                ref={ref}  // Make sure the ref is forwarded to the reference field
+                onChangeText={setReference}  // Update the reference state
                 style={[styles.textInput, { textAlign: "center", fontSize: 22, borderColor: colors.blue, backgroundColor: colors.lightBlue }]}
-                placeholder="(OPTIONAL) REFERENCE"
-                onChangeText={setReference}
-                clearTextOnFocus={true}
+                placeholder="Enter reference"
             />
         </View>
     );
 });
 
-// Define prop types for validation
 InputComponent.propTypes = {
     generatedTime: PropTypes.string.isRequired,
-    setReference: PropTypes.func.isRequired,
+    setReference: PropTypes.func.isRequired
 };
 
 const styles = StyleSheet.create({
     inputContainer: {
-        width: "100%",
-        paddingHorizontal: 20,
-        marginBottom: 10,
+        marginVertical: 10,
     },
     textInput: {
         borderColor: colors.gray,
@@ -42,7 +39,6 @@ const styles = StyleSheet.create({
         height: 50,
         padding: 10,
         borderRadius: 10,
-        marginBottom: 10,
     },
 });
 

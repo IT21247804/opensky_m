@@ -45,7 +45,7 @@ const Page = () => {
     const [generatedTime, setGeneratedTime] = useState(FormattedTimeNow("Asia/Colombo"))
     const [ref, setReference] = useState("")
     const [busy, setBusy] = useState(false)
-    const inputRef = useRef(null);
+    const inputRef = useRef<TextInput>(null);
 
     useEffect(() => {
 
@@ -93,6 +93,10 @@ const Page = () => {
         // setQrValue(`${timestamp}`)
 
         await PrintToken({ barCodeValue: `${timestamp}`, generatedTime: formattedTime, barcodeImage: barcodeData })
+          // Clear the reference input field after the button press
+        if (inputRef.current) {
+            inputRef.current.clear();
+        }
         // Reset state when done
     setReference('');
     setBusy(false);
