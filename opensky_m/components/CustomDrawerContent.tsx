@@ -18,7 +18,7 @@ const CustomDrawerContent = (props: any) => {
             >
                 <View style={styles.drawerHeader}>
                     <Image
-                        source={require("../assets/images/splash.png")}
+                        source={require("../assets/splash.png")}
                         style={styles.image}
                     />
                 </View>
