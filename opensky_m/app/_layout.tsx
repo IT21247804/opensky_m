@@ -55,6 +55,20 @@ const DrawerLayout = () => {
                             drawerIcon: ({ size, color }) => (<Ionicons name='cash-outline' size={size} color={color} />)
                         }}
                     />
+
+                        <Drawer.Screen
+                        name="inputComponent"
+                        options={{
+                            drawerItemStyle: { display: 'none' }
+                        }}
+                    />
+
+                    <Drawer.Screen
+                        name="ActionComponent"
+                        options={{
+                            drawerItemStyle: { display: 'none' }
+                        }}
+                    />
                 </Drawer>
             </DatabaseProvider>
         </GestureHandlerRootView>

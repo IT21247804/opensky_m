@@ -45,7 +45,7 @@ const Page = () => {
     const [generatedTime, setGeneratedTime] = useState(FormattedTimeNow("Asia/Colombo"))
     const [ref, setReference] = useState("")
     const [busy, setBusy] = useState(false)
-    const inputRef = useRef()
+    const inputRef = useRef(null);
 
     useEffect(() => {
 
@@ -160,7 +160,7 @@ const Page = () => {
                             <img src="${thilakawardena_logo_long}" width="350" style="margin-bottom: 10px;" />
                             <div class="separator" style="font-weight: bold">PARKING TOKEN</div>
                             <div style="font-size: 22px; margin-bottom: 10px;">${generatedTime}</div>
-                            <div style="font-size: 32px; margin-bottom: 5px;">${barCodeValue.toUpperCase()}</div>
+                            <div style="font-size: 32px; margin-bottom: 5px;">${ref?.toUpperCase()}</div>
                             <div class="bc-container">
                               <img src="${barcodeImage}" width="320"/>
                             </div>
@@ -244,7 +244,8 @@ const onRelease = () => (
 
     return (
         <SafeAreaView style={styles.container}>
-            <InputComponent generatedTime={generatedTime} ref={inputRef} setReference={setReference} />
+             <InputComponent generatedTime={generatedTime} ref={inputRef} setReference={setReference} /> 
+            
             <ActionComponent busy={busy} onPress={GenerateParkingToken} />
         </SafeAreaView>
     )
