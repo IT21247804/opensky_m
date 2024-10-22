@@ -2,6 +2,8 @@
   "expo": {
     "name": "opensky_m",
     "slug": "opensky_m",
+    "privacy": "public",
+    "description": "opensky_m",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -18,13 +20,26 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.pasan_baddewithana.opensky_m"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-router"
-    ]
+      "expo-router",
+      "expo-asset"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "90f988c0-2507-41c8-833a-e7a464d9e65f"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/90f988c0-2507-41c8-833a-e7a464d9e65f"
+    }
   }
 }
