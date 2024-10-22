@@ -9,6 +9,8 @@ import { format } from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
 import { ScrollView } from "react-native-gesture-handler"
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import InputComponent from '@/app/inputComponent';
+import ActionComponent from '@/app/ActionComponent';
 
 import { params } from "@/constants/system"
 
@@ -17,7 +19,7 @@ import * as Print from 'expo-print'
 import { thilakawardena_logo_long } from "@/constants/images"
 
 import { currencyFormat } from "@/utils/formaters"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { Keyboard } from 'react-native'
 
 
@@ -43,6 +45,7 @@ const Page = () => {
     const [generatedTime, setGeneratedTime] = useState(FormattedTimeNow("Asia/Colombo"))
     const [ref, setReference] = useState("")
     const [busy, setBusy] = useState(false)
+    const inputRef = useRef(null);
 
     useEffect(() => {
 
@@ -77,7 +80,7 @@ const Page = () => {
     // NEW ONE PRESS FUNCTION TO CREATE PARKING TOKEN
     const GenerateParkingToken = async () => {
 
-        Keyboard.dismiss();
+        if (busy) return; 
         // HOLD NEW PRINT REQUEST UNTIL FINISHES THE LAST
         setBusy(true)
 
@@ -90,6 +93,9 @@ const Page = () => {
         // setQrValue(`${timestamp}`)
 
         await PrintToken({ barCodeValue: `${timestamp}`, generatedTime: formattedTime, barcodeImage: barcodeData })
+        // Reset state when done
+    setReference('');
+    setBusy(false);
     }
 
     const saveFile = async (uri: string, filename: string, mimetype: string): Promise<void> => {
@@ -154,7 +160,7 @@ const Page = () => {
                             <img src="${thilakawardena_logo_long}" width="350" style="margin-bottom: 10px;" />
                             <div class="separator" style="font-weight: bold">PARKING TOKEN</div>
                             <div style="font-size: 22px; margin-bottom: 10px;">${generatedTime}</div>
-                            <div style="font-size: 32px; margin-bottom: 5px;">${barCodeValue.toUpperCase()}</div>
+                            <div style="font-size: 32px; margin-bottom: 5px;">${ref?.toUpperCase()}</div>
                             <div class="bc-container">
                               <img src="${barcodeImage}" width="320"/>
                             </div>
@@ -238,65 +244,9 @@ const onRelease = () => (
 
     return (
         <SafeAreaView style={styles.container}>
-              <View
-    onResponderRelease={ onRelease }
-    onStartShouldSetResponder={ shouldSetResponse }
-    style={ { height: '100%',width: "100%" } }
-  >
-            <View style={{ width: "100%", gap: 10, marginBottom: 10, paddingHorizontal: 20 }}>
-                <TextInput
-                    readOnly
-                    value={generatedTime}
-                    style={[styles.textInput, { width: "100%", textAlign: "center", fontSize: 28, color: colors.darkGray, borderColor: colors.white, marginBottom: 25 }]}
-                    placeholder="Generated Time"
-                    focusable
-                />
-                <TextInput
-                    readOnly={busy}
-                    value={ref}
-                    style={[styles.textInput, { width: "100%", textAlign: "center", fontSize: 22, borderColor: colors.blue, backgroundColor: colors.lightBlue }]}
-                    placeholder="(OPTIONAL) REFERENCE"
-                    onChangeText={setReference}
-                    clearTextOnFocus={true}
-                />
-
-            </View>
+             <InputComponent generatedTime={generatedTime} ref={inputRef} setReference={setReference} /> 
             
-            <ScrollView style={{ width: "100%" }}>
-                {/* <View style={styles.barcodeContainer}> */}
-                {/* <Barcode value={qrValue.toUpperCase()} onBase64Generated={onBarcodeData} /> */}
-                {/* <QRCode
-                        value={`ID#:${qrValue}, TIME:${generatedTime}, REF:${ref.trim() === "" ? "NOT-DEFINED" : ref}`}
-                        size={350}
-                        logo={require("../assets/images/thilakawardana_square.jpg")}
-                        getRef={(c: any) => (svgRef.current = c)}
-                    /> */}
-                {/* </View> */}
-
-                <View style={{ width: "100%", paddingHorizontal: 20, marginTop: 10, gap: 10 }}
-                
-                
-                >
-                    <TouchableOpacity
-
-                        disabled={busy}
-
-                        // onPress={PrintQR}
-                        onPress={GenerateParkingToken}
-                        style={[styles.printButton]}
-                    >
-                        <View style={{ flexDirection: "row", gap: 20, padding: 20, justifyContent: "center" }}>
-                            <Ionicons
-                                color={colors.white}
-                                name={(busy) ? 'ban-outline' : 'print-outline'}
-                                size={36}
-                            />
-                            <Text style={{ fontSize: 24, color: colors.white }}>{busy ? "Printing ..." : "Print Token"}</Text>
-                        </View>
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
-            </View>
+            <ActionComponent busy={busy} onPress={GenerateParkingToken} />
         </SafeAreaView>
     )
 }
